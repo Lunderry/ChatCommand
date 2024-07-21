@@ -4,7 +4,7 @@ local Command = require(script.Command)
 
 local module = {}
 
-function module.Added(plr: Player, char): ()
+function module.Added(plr: Player): ()
 	plr.Chatted:Connect(function(msg)
 		if string.sub(msg, 1, 1) ~= "!" then
 			return
@@ -19,14 +19,20 @@ function module.Added(plr: Player, char): ()
 			return
 		end
 
-		Command[nameFunct](plr, char, table.unpack(packMsg))
+		Command[nameFunct](plr, table.unpack(packMsg))
 	end)
 end
 
----variable from funct 1: plr, 2: char, 3: ...
----@param name string
+---variable from funct 1: plr, 2: ...
+---@param t string
 ---@param func any
-function module.AddCommand(name: string, func: any): ()
-	Command[name] = func
+function module.AddCommand(t: string | {}, func: any): ()
+	if type(t) == "table" then
+		for i, v in t do
+			Command[i] = v
+		end
+	else
+		Command[t] = func
+	end
 end
 return module

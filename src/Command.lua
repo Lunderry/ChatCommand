@@ -2,7 +2,7 @@
 local command
 
 command = {
-	info = function()
+	info = function(_, _)
 		local str = ""
 		for i, v in command do
 			if i == "info" then
