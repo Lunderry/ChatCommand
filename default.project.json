@@ -1,6 +1,6 @@
 {
   "name": "ChatCommand",
   "tree": {
-      "$path": "src"
+    "$path": "src"
   }
 }

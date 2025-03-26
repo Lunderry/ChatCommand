@@ -1,38 +1,39 @@
 --!strict
-local MensageManager = require(script.Manager)
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+--
 local Command = require(script.Command)
+--
+local InitializationServer = require(script.InitializationServer)
+local InitializationClient = require(script.InitializationClient)
 
 local module = {}
 
-function module.Added(plr: Player): ()
-	plr.Chatted:Connect(function(msg)
-		if string.sub(msg, 1, 1) ~= "!" then
-			return
+function module.Init(): ()
+	if not RunService:IsStudio() then
+		return
+	end
+
+	task.defer(function()
+		if RunService:IsServer() then
+			InitializationServer()
+		else
+			InitializationClient()
 		end
-		local packMsg = MensageManager.div(msg)
-
-		local nameFunct = string.lower(packMsg[1])
-		table.remove(packMsg, 1)
-
-		if not Command[nameFunct] then
-			warn("dont exist function", nameFunct)
-			return
-		end
-
-		Command[nameFunct](plr, table.unpack(packMsg))
 	end)
 end
 
----variable from funct 1: plr, 2: ...
----@param t string
----@param func any
-function module.AddCommand(t: string | {}, func: any): ()
-	if type(t) == "table" then
-		for i, v in t do
-			Command[i] = v
-		end
-	else
-		Command[t] = func
+--set is the parameters that need the callback
+---@param name string
+---@param set table {"string" | "number"}
+---@param callback function (...any) -> ()
+function module.AddCommand(name: string, set: { "string" | "number" }, callback: (...any) -> ()): ()
+	if RunService:IsServer() then
+		local CommandRemote = ReplicatedStorage:WaitForChild("_CommandRemote") :: RemoteEvent
+		CommandRemote:FireAllClients(name, set)
 	end
+
+	Command[name] = callback
 end
 return module
